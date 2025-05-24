@@ -38,22 +38,29 @@ def add_task(text, dt, remind_before, user_id):
     save_tasks(tasks)
 
 def extract_datetime(text: str):
-    parsed = dateparser.parse(text, settings={
-        "PREFER_DATES_FROM": "future",
-        "DATE_ORDER": "DMY"
-    }, languages=["ru"])
+    parsed = dateparser.parse(
+        text,
+        settings={
+            "PREFER_DATES_FROM": "future",
+            "DATE_ORDER": "DMY",
+            "RELATIVE_BASE": datetime.now()
+        },
+        languages=["ru"]
+    )
     if parsed:
         return parsed
-    match = re.search(r'(\d{1,2}[./]\d{1,2}[./]\d{2,4})\s*(в\s*)?(\d{1,2}:\d{2})', text)
+
+    match = re.search(r"(\d{1,2}[./]\d{1,2})\s*(в\s*)?(\d{1,2}:\d{2})", text)
     if match:
         date_str = match.group(1)
         time_str = match.group(3)
-        full_str = f"{date_str} {time_str}"
+        current_year = datetime.now().year
+        full_str = f"{date_str}.{current_year} {time_str}"
         try:
             return datetime.strptime(full_str, "%d.%m.%Y %H:%M")
         except:
             try:
-                return datetime.strptime(full_str, "%d.%m.%y %H:%M")
+                return datetime.strptime(full_str, "%d/%m/%Y %H:%M")
             except:
                 return None
     return None
